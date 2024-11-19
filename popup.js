@@ -1,57 +1,71 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const urlField = document.getElementById("url");
-  const commentsContainer = document.getElementById("comments");
-  const addButton = document.getElementById("addButton");
-  const commentInput = document.getElementById("commentInput");
+// popup.js
+document.addEventListener('DOMContentLoaded', function () {
+  const saveUrlButton = document.getElementById('save-url');
+  const saveMessageButton = document.getElementById('save-message');
+  const messageInput = document.getElementById('message-input');
+  const messagesDiv = document.getElementById('messages');
 
-  // 獲取當前網址
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const currentUrl = tab.url;
-  urlField.textContent = currentUrl;
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbyQYo56wVTNCbKNTM-Ch-Vxj51qd2nFDuqluPNx3Fn11ng7YoGExtP1d5BqJU_UhGNF/execL'; // <-- 在這裡填入你的 Google Apps Script 網頁應用程式 URL
 
-  // 讀取留言
-  async function fetchComments() {
-    const response = await fetch(`https://script.google.com/macros/s/AKfycbzFbTaRLgjEP5usVaO9gU3qgSI1XlW1WzDlsdvjneoVWj4rLfuta-HVeImPh2229XhX/exec?url=${encodeURIComponent(currentUrl)}`);
-    const comments = await response.json();
-    commentsContainer.innerHTML = "";
-    comments.forEach(comment => {
-      const div = document.createElement("div");
-    
-      // 格式化時間軸（秒 -> 分:秒）
-      const seconds = comment[2];
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      const timeString = `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-    
-      div.innerHTML = `<span class="time" style="color:blue; cursor:pointer;">[${timeString}]</span> ${comment[1]} (${new Date(comment[3]).toLocaleString()})`;
-  
-      // 添加點擊事件
-      div.querySelector(".time").addEventListener("click", () => {
-        const videoElement = document.querySelector("video");
-        if (videoElement) {
-          videoElement.currentTime = seconds; // 跳轉到留言的時間軸
-          videoElement.play();
-        }
+  saveUrlButton.addEventListener('click', async () => {
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = tab.url;
+
+    // Save URL locally
+    chrome.storage.sync.get('urls', (data) => {
+      const urls = data.urls || [];
+      urls.push(url);
+      chrome.storage.sync.set({ urls });
+    });
+
+    // Send URL to Google Sheets through Apps Script
+    fetch(webAppUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ type: 'url', value: url }),
+    }).then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch((error) => console.error('Error:', error));
   });
-  
-  commentsContainer.appendChild(div);
+
+  saveMessageButton.addEventListener('click', () => {
+    const message = messageInput.value;
+
+    // Save message locally
+    chrome.storage.sync.get('messages', (data) => {
+      const messages = data.messages || [];
+      messages.push(message);
+      chrome.storage.sync.set({ messages }, () => {
+        displayMessages();
+        messageInput.value = '';
+      });
+    });
+
+    // Send message to Google Sheets through Apps Script
+    fetch(webAppUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ type: 'message', value: message }),
+    }).then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch((error) => console.error('Error:', error));
+  });
+
+  function displayMessages() {
+    chrome.storage.sync.get('messages', (data) => {
+      const messages = data.messages || [];
+      messagesDiv.innerHTML = '';
+      messages.forEach((msg, index) => {
+        const div = document.createElement('div');
+        div.textContent = `${index + 1}. ${msg}`;
+        messagesDiv.appendChild(div);
+      });
     });
   }
 
-  // 添加留言
-  addButton.addEventListener("click", async () => {
-    const newComment = commentInput.value.trim();
-    if (!newComment) return;
-
-    await fetch("https://script.google.com/macros/s/AKfycbzFbTaRLgjEP5usVaO9gU3qgSI1XlW1WzDlsdvjneoVWj4rLfuta-HVeImPh2229XhX/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: currentUrl, comment: newComment })
-    });
-
-    commentInput.value = "";
-    fetchComments();
-  });
-
-  fetchComments();
+  displayMessages();
 });

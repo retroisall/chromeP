@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>留言助手</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>URL Saver</title>
+  <link rel="stylesheet" type="text/css" href="popup.css">
+  <script src="popup.js"></script>
 </head>
 <body>
-  <div>
-    <h3>當前網址：</h3>
-    <p id="url"></p>
+  <div class="container">
+    <h3>Save Current URL</h3>
+    <button id="save-url" class="button">Save URL</button>
+    <h4>Saved Messages</h4>
+    <div id="messages" class="messages"></div>
+    <input type="text" id="message-input" class="input" placeholder="Enter a message">
+    <button id="save-message" class="button">Save Message</button>
   </div>
-  <div>
-    <h3>留言：</h3>
-    <div id="comments"></div>
-    <input type="text" id="commentInput" placeholder="輸入留言">
-    <button id="addButton">新增留言</button>
-  </div>
-  <script src="popup.js"></script>
 </body>
 </html>
