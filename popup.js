@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const messageInput = document.getElementById('message-input');
   const messagesDiv = document.getElementById('messages');
 
-  const webAppUrl = 'https://script.google.com/macros/s/AKfycbyQYo56wVTNCbKNTM-Ch-Vxj51qd2nFDuqluPNx3Fn11ng7YoGExtP1d5BqJU_UhGNF/execL'; // <-- 在這裡填入你的 Google Apps Script 網頁應用程式 URL
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbyQYo56wVTNCbKNTM-Ch-Vxj51qd2nFDuqluPNx3Fn11ng7YoGExtP1d5BqJU_UhGNF/exec'; // <-- 在這裡填入你的 Google Apps Script Web App URL
 
   saveUrlButton.addEventListener('click', async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
